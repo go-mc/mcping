@@ -33,9 +33,9 @@ Or you can `go build` and move the executable to your `$PATH`. Or run it directl
 ```shell
 mcping host:port			# ping specific server
 mcping host					# ping default port (25565)
-mcping host -p 404	        # specific protocol version
-mcping host -f icon.png		# save server's favicon
-mcping host -f="/path with spaces/icon.png"
+mcping -p 404 host	        # specific protocol version
+mcping -f icon.png host		# save server's favicon
+mcping -f="/path with spaces/icon.png" host
 ```
 
 > mcping will lookup SRV record if port is 25565 (include default set) as same as Minecraft itself.
