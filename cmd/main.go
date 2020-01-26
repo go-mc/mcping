@@ -5,11 +5,14 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"strconv"
 
 	"github.com/go-mc/mcping"
+	"github.com/mattn/go-colorable"
 )
 
 var protocol = flag.Int("protocol", 578, "The minecraft protocol version")
+var output = colorable.NewColorableStdout()
 
 func main() {
 	flag.Parse()
@@ -23,15 +26,17 @@ func main() {
 		}
 	}
 
-	fmt.Printf("MCPING (%s):\n", addr)
+	fmt.Fprintf(output, "MCPING (%s):\n", addr)
 	status, delay, err := mcping.PingAndList(addr, *protocol)
 	if err != nil {
 		exit(err)
 	}
 
-	fmt.Printf(`server: %s
+	fmt.Fprintf(output,
+		`server: %s
 protocol: %d
-description: %s
+description: 
+%s
 delay: %v
 list: %d/%d
 `,
@@ -41,17 +46,21 @@ list: %d/%d
 		status.Players.Online,
 		status.Players.Max)
 	for _, v := range status.Players.Sample {
-		fmt.Printf("- [%s] %v\n", v.Name, v.ID)
+		fmt.Fprintf(output, "- [%s] %v\n", v.Name, v.ID)
 	}
 }
 
-// 尝试SRV解析，若失败则使用默认端口
+// written after read mojang's code
 func lookupMC(addr string) (host, port string) {
-	// TODO: 解析SRV
+	_, addrs, err := net.LookupSRV("minecraft", "tcp", addr)
+	if err == nil && len(addrs) > 0 && addrs[0] != nil {
+		return addrs[0].Target, strconv.Itoa(int(addrs[0].Port))
+	}
+	// lookup SRV error, return with default port
 	return addr, "25565"
 }
 
 func exit(err error) {
-	fmt.Printf("error: %v\n", err)
+	fmt.Fprintf(output, "error: %v\n", err)
 	os.Exit(1)
 }
