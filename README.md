@@ -28,7 +28,7 @@ Please ensure `$GOPATH/bin` or `$GOBIN` is in your `$PATH`.Because mcping will b
 
 Or you can `go build` and move the executable to your `$PATH`. Or run it directly.
 
-## useage
+## usage
 
 ```shell
 mcping host:port			# ping specific server
