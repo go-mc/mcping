@@ -1,7 +1,6 @@
 package mcping
 
 import (
-	"bufio"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -27,11 +26,7 @@ func PingAndList(addr string, protocol int) (*Status, time.Duration, error) {
 // PingAndListConn is the version of PingAndList using a exist connection.
 func PingAndListConn(conn net.Conn, protocol int) (*Status, time.Duration, error) {
 	addr := conn.RemoteAddr().String()
-	mcConn := &mcnet.Conn{
-		Socket:     conn,
-		Writer:     conn,
-		ByteReader: bufio.NewReader(conn),
-	}
+	mcConn := mcnet.WrapConn(conn)
 	return pingAndList(addr, mcConn, protocol)
 }
 
@@ -65,7 +60,8 @@ func pingAndList(addr string, conn *mcnet.Conn, protocol int) (*Status, time.Dur
 	}
 
 	// response
-	recv, err := conn.ReadPacket()
+	var recv pk.Packet
+	err = conn.ReadPacket(&recv)
 	if err != nil {
 		return nil, 0, fmt.Errorf("receiving response: %v", err)
 	}
@@ -84,7 +80,7 @@ func pingAndList(addr string, conn *mcnet.Conn, protocol int) (*Status, time.Dur
 		return nil, 0, fmt.Errorf("sending ping: %v", err)
 	}
 
-	recv, err = conn.ReadPacket()
+	err = conn.ReadPacket(&recv)
 	if err != nil {
 		return nil, 0, fmt.Errorf("receiving pong: %v", err)
 	}
