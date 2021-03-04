@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net"
 	"strconv"
+	"strings"
 
 	"github.com/go-mc/mcping"
 	"github.com/mattn/go-colorable"
@@ -67,13 +68,15 @@ func main() {
 
 // written after read mojang's code
 func lookupMC(addr string) (addrs []string) {
-	_, addrsSRV, err := net.LookupSRV("minecraft", "tcp", addr)
-	if err == nil && len(addrsSRV) > 0 {
-		for _, addrSRV := range addrsSRV {
-			addrs = append(addrs, net.JoinHostPort(addrSRV.Target, strconv.Itoa(int(addrSRV.Port))))
+	if !strings.Contains(addr, ":") {
+		_, addrsSRV, err := net.LookupSRV("minecraft", "tcp", addr)
+		if err == nil && len(addrsSRV) > 0 {
+			for _, addrSRV := range addrsSRV {
+				addrs = append(addrs, net.JoinHostPort(addrSRV.Target, strconv.Itoa(int(addrSRV.Port))))
+			}
+			return
 		}
-	} else {
-		addrs = []string{net.JoinHostPort(addr, "25565")}
+		return []string{net.JoinHostPort(addr, "25565")}
 	}
-	return
+	return []string{addr}
 }
